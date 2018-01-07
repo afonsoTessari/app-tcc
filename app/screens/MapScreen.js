@@ -95,7 +95,7 @@ class MapScreen extends Component{
       modalVisible:false,     
       markers: [
         ...this.state.markers,
-        newMarker        
+        newMarker
       ]
     });
 
