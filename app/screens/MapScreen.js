@@ -38,9 +38,20 @@ class MapScreen extends Component{
     };
     this.addMarker = this.addMarker.bind(this);    
     this.insertMarker = this.insertMarker.bind(this); 
-    this.showModal = this.showModal.bind(this);   
+    this.showModal = this.showModal.bind(this);
+
   }
 
+
+  async componentDidMount(){
+    let arraymarker =  await this.getArrayFromApi();
+
+    this.setState({
+      isAddingMarker:false,
+      modalVisible:false,     
+      markers:arraymarker,
+    });
+  }
 
   componentWillMount(){
     navigator.geolocation.getCurrentPosition(
