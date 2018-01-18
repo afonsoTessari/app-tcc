@@ -26,6 +26,7 @@ class CustomModal extends Component {
 		this.setState({
 			newMarkerText: text
 		})
+
 	}
 
 	render() {
@@ -37,7 +38,7 @@ class CustomModal extends Component {
 						<Text style={styles.boxTitle}> Adicionar Marcador </Text>
 						<TextInput
 							autoFocus
-							autoCapitalize="none"
+							autoCapitalize="sentences"
 							style={styles.boxInput}
 							underlineColorAndroid="rgba(0, 0, 0, 0)"
 							placeholder="Comentário"

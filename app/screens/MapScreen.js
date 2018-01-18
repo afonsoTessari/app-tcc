@@ -8,7 +8,8 @@ import {
   TextInput,
   TouchableHighlight,
   Dimensions,
-  ActivityIndicator
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 
 import MapView from 'react-native-maps';
@@ -40,11 +41,13 @@ class MapScreen extends Component{
     this.insertMarker = this.insertMarker.bind(this); 
     this.showModal = this.showModal.bind(this);
 
+
   }
 
 
   async componentDidMount(){
     let arraymarker =  await this.getArrayFromApi();
+    //console.log(arraymarker.description);
 
     this.setState({
       isAddingMarker:false,
@@ -74,7 +77,16 @@ class MapScreen extends Component{
       }
     )
   }
-    
+   
+  async getArrayFromApi(){
+    try{
+      let response = await fetch("http://192.168.43.54:3000/ArrayFromApi")
+      let responseJson = await response.json();
+      return responseJson.marker;    
+    } catch (error){
+      console.error(error);
+    }
+  } 
 
   addMarker(){
     this.setState({isAddingMarker:true})
@@ -96,9 +108,10 @@ class MapScreen extends Component{
 
   async insertMarker(description){
     let newMarker = {
-      id:+new Date(),
+      _id:+new Date(),
       coordinate:this.coordinate,
       description:description,
+      color:'indigo',
     };
 
     this.setState({
@@ -111,7 +124,7 @@ class MapScreen extends Component{
     });
 
     try {
-      let response = await fetch("http://192.168.1.103:3000/marker" , {
+      let response = await fetch("http://192.168.43.54:3000/marker" , {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -121,27 +134,56 @@ class MapScreen extends Component{
         //body: JSON.stringify({marker: "newMarker"})
       });
 
-      let responseData = await response.json();
-      alert(responseData);
+     // let responseData = await response.json();
+      alert("Marcador adicionado");
     } catch(error){
       alert(error.message);
+    }   
+  }
+
+  async onDelete(marker){
+    try {
+      let response = await fetch("http://192.168.43.54:3000/remove/"+marker._id,{
+          method: 'DELETE',
+        });
+        let res = await response.json();
+        if (res.success) {
+          console.log("Removido o marker: ")
+
+          this.setState({
+            markers: this.state.markers.filter((element, index) => {
+              return element._id != marker._id
+            })
+          });
+        } else {
+          throw new Error("Não foi possível remover o marcador")
+        }
+    } catch(error) {
+        alert("Erro: " + error.message)
     }
-    
+  }
+
+  onPressRemove(marker){
+    Alert.alert(
+        'Deseja excluir o marcador?',
+        marker.description,
+          [
+            {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+            {text: 'OK', onPress: () =>this.onDelete(marker)},
+          ],
+      );
   }
 	
 	render() {
     if(this.state.isLoading){
       return(
-        <View style={{
-          flex:1,
-          alignItems:'center',
-          justifyContent:'center'
-        }}>
-          <ActivityIndicator
-            size={32}
-            color='red'
-
-          />
+        <View
+          style={{
+            flex:1,
+            alignItems:'center',
+            justifyContent:'center'
+          }}>
+          <ActivityIndicator size={32} color='red' />
         </View>
       )
     }
@@ -150,10 +192,11 @@ class MapScreen extends Component{
       return(
         <MapView.Marker
           coordinate={marker.coordinate}
-          key={marker.id}
+          _id={marker._id}
+          pinColor={marker.color} 
         >          
-            <MapView.Callout>
-            <Text>{marker.description}</Text>
+            <MapView.Callout onPress={(param) => this.onPressRemove(marker)}>
+              <Text>{marker.description}</Text>
             </MapView.Callout>
         </MapView.Marker>
       )
@@ -170,7 +213,7 @@ class MapScreen extends Component{
           ]}
           onPress={ () =>{
             if (!this.state.isAddingMarker){
-            this.addMarker();        
+            this.addMarker(); 
             }
 
           }}
@@ -198,7 +241,7 @@ class MapScreen extends Component{
           onCancel={()=> this.setState({modalVisible:false})}
           onRequestClose={()=> {console.log('Modal Fechada')}}
           onAdd={this.insertMarker} 
-        />        
+        />       
      	</View>
     );
   }
