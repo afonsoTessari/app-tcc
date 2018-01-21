@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { CheckBox } from 'react-native-elements'
 
 import {
   StyleSheet,
@@ -36,6 +37,28 @@ class CustomModal extends Component {
 				<View style={styles.modalContainer}>
 					<View style={styles.boxContainer}>
 						<Text style={styles.boxTitle}> Adicionar Marcador </Text>
+						
+						<View style={styles.checkboxContainer}>
+							<CheckBox
+							  title='Segurança'
+							  checked={this.state.checked}
+							/>
+							<CheckBox
+							  title='Trânsito'
+							  checked={this.state.checked}
+							/>
+						</View>
+						<View style={styles.checkboxContainer}>	
+							<CheckBox
+							  title='Infraestrutura'
+							  checked={this.state.checked}
+							/>
+							<CheckBox
+							  title='Clima'
+							  checked={this.state.checked}
+							/>
+						</View>
+
 						<TextInput
 							autoFocus
 							autoCapitalize="sentences"
@@ -83,7 +106,7 @@ const styles = StyleSheet.create({
 		backgroundColor: '#FFF',
 		borderRadius: 10,
 		alignItems: 'center',
-		width: 280,
+		width: 300,
 	},
 	
 	boxTitle:{
@@ -100,6 +123,12 @@ const styles = StyleSheet.create({
 		borderColor: '#DDD',
 		height: 50,
 		borderRadius: 3,
+	},
+
+	checkboxContainer:{
+		marginTop: 2,
+		height: 52,
+		flexDirection: 'row',
 	},
 
 	buttonContainer:{

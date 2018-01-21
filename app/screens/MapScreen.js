@@ -80,7 +80,7 @@ class MapScreen extends Component{
    
   async getArrayFromApi(){
     try{
-      let response = await fetch("http://192.168.43.54:3000/ArrayFromApi")
+      let response = await fetch("http://192.168.1.103:3000/ArrayFromApi")
       let responseJson = await response.json();
       return responseJson.marker;    
     } catch (error){
@@ -124,7 +124,7 @@ class MapScreen extends Component{
     });
 
     try {
-      let response = await fetch("http://192.168.43.54:3000/marker" , {
+      let response = await fetch("http://192.168.1.103:3000/marker" , {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -143,7 +143,7 @@ class MapScreen extends Component{
 
   async onDelete(marker){
     try {
-      let response = await fetch("http://192.168.43.54:3000/remove/"+marker._id,{
+      let response = await fetch("http://192.168.1.103:3000/remove/"+marker._id,{
           method: 'DELETE',
         });
         let res = await response.json();

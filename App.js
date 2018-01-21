@@ -10,17 +10,24 @@ import {
   StyleSheet,
   Text,
   View,
-  Button
+  Button,
+  StatusBar
 } from 'react-native';
 
 import { TabNavigator } from 'react-navigation';
 import { StackNavigator } from 'react-navigation';
 import MapScreen from './app/screens/MapScreen.js';
 import CustomModal from './app/screens/CustomModal.js';
+import HomeScreen from './app/screens/HomeScreen.js';
+
+//import Routes from './src/Routes';
 
 const Routes = {
   Map: {
-      screen: MapScreen
+    screen: MapScreen
+  },
+  Login: {
+    screen: HomeScreen
   },
 };
 
