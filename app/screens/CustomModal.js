@@ -16,8 +16,11 @@ class CustomModal extends Component {
 	constructor() {
 		super();
 
+
 		this.state = {
-			newMarkerText: ''
+			newMarkerText: '',
+			checked:null,
+			
 		};
 
 		this.changeText = this.changeText.bind(this);
@@ -40,22 +43,26 @@ class CustomModal extends Component {
 						
 						<View style={styles.checkboxContainer}>
 							<CheckBox
+								onPress={()=>this.setState({checked:'Segurança'})}	
 							  title='Segurança'
-							  checked={this.state.checked}
+							  checked={this.state.checked === 'Segurança'}
 							/>
 							<CheckBox
+								onPress={()=>this.setState({checked:'Trânsito'})}
 							  title='Trânsito'
-							  checked={this.state.checked}
+							  checked={this.state.checked ==='Trânsito'}
 							/>
 						</View>
 						<View style={styles.checkboxContainer}>	
 							<CheckBox
+							onPress={()=>this.setState({checked:'Infraestrutura'})}
 							  title='Infraestrutura'
-							  checked={this.state.checked}
+							  checked={this.state.checked ==='Infraestrutura'}
 							/>
 							<CheckBox
+							onPress={()=>this.setState({checked:'Clima'})}
 							  title='Clima'
-							  checked={this.state.checked}
+							  checked={this.state.checked ==='Clima'}
 							/>
 						</View>
 
@@ -79,7 +86,10 @@ class CustomModal extends Component {
 
 							<TouchableOpacity
 								style={[styles.button, styles.submitButton]}
-								onPress={()=>{this.props.onAdd(this.state.newMarkerText)}}
+								onPress={()=>{
+									this.setState({newMarkerText:''})
+									this.props.onAdd(this.state.newMarkerText,this.state.checked)
+								}}
 							>
 								<Text style={styles.buttonText}>Adicionar</Text>
 							</TouchableOpacity>	

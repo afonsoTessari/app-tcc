@@ -18,20 +18,22 @@ import { TabNavigator } from 'react-navigation';
 import { StackNavigator } from 'react-navigation';
 import MapScreen from './app/screens/MapScreen.js';
 import CustomModal from './app/screens/CustomModal.js';
-import HomeScreen from './app/screens/HomeScreen.js';
+import Login from './app/screens/Login.js';
 
-//import Routes from './src/Routes';
 
 const Routes = {
-  Map: {
+  Login: {
+    screen: Login
+  },
+  MapScreen: {
     screen: MapScreen
   },
-  Login: {
-    screen: HomeScreen
-  },
+  
 };
 
-const RootNavigator = TabNavigator(Routes);
+const RootNavigator = StackNavigator(Routes, {
+    headerMode:'none'
+});
 
 export default class App extends Component {
   render() {

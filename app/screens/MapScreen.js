@@ -12,15 +12,20 @@ import {
   Alert,
 } from 'react-native';
 
+import {StackNavigator} from 'react-navigation';
 import MapView from 'react-native-maps';
 import CustomModal from './CustomModal.js';
+import MyMarkersModal from './MyMarkersModal.js';
+import Login from './Login.js';
 
 const {width, height} = Dimensions.get('window')
 
 class MapScreen extends Component{
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+
+    //alert(props.user);
 
     this.state = {
       isLoading:true,
@@ -35,11 +40,15 @@ class MapScreen extends Component{
 
       isAddingMarker: false,
       modalVisible: false,
+      modalMyMarkersVisible:false,
 
     };
     this.addMarker = this.addMarker.bind(this);    
     this.insertMarker = this.insertMarker.bind(this); 
     this.showModal = this.showModal.bind(this);
+    this.onDelete = this.onDelete.bind(this);
+    this.openModalMyMarkers = this.openModalMyMarkers.bind(this);
+
 
 
   }
@@ -80,7 +89,7 @@ class MapScreen extends Component{
    
   async getArrayFromApi(){
     try{
-      let response = await fetch("http://192.168.1.103:3000/ArrayFromApi")
+      let response = await fetch("http://10.0.2.120:3000/ArrayFromApi")
       let responseJson = await response.json();
       return responseJson.marker;    
     } catch (error){
@@ -88,43 +97,40 @@ class MapScreen extends Component{
     }
   } 
 
-  addMarker(){
+  addMarker(){                            
     this.setState({isAddingMarker:true})
   }
 
-  showModal(e){
+  openModalMyMarkers() {
+    this.setState({modalMyMarkersVisible:true});
+  }
+
+  showModal(e){                       //Exibe o modal adicionar marcadores
     if(this.state.isAddingMarker){
       this.setState({
         modalVisible:true,
         isAddingMarker:false,
 
       })
-     this.coordinate = e.nativeEvent.coordinate;
+      this.coordinate = e.nativeEvent.coordinate;
      this.description = this.state.newMarkerText;
     }
   }
 
 
 
-  async insertMarker(description){
+  async insertMarker(description, category){
     let newMarker = {
-      _id:+new Date(),
       coordinate:this.coordinate,
       description:description,
-      color:'indigo',
-    };
+      category:category,
+      user:this.props.navigation.state.params.user
+      };
 
-    this.setState({
-      isAddingMarker:false,
-      modalVisible:false,     
-      markers: [
-        ...this.state.markers,
-        newMarker
-      ]
-    });
+    
 
     try {
-      let response = await fetch("http://192.168.1.103:3000/marker" , {
+      let response = await fetch("http://10.0.2.120:3000/marker" , {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -134,8 +140,25 @@ class MapScreen extends Component{
         //body: JSON.stringify({marker: "newMarker"})
       });
 
-     // let responseData = await response.json();
-      alert("Marcador adicionado");
+      let responseData = await response.json();
+      
+      if(responseData.success){
+        
+        newMarker._id = responseData.marker_id;
+        
+        this.setState({
+          isAddingMarker:false,
+          modalVisible:false,     
+          markers: [
+            ...this.state.markers,
+            newMarker
+          ]
+        });
+
+        alert("Marcador adicionado");
+      }else{
+        throw new Error(responseData.message);
+      }
     } catch(error){
       alert(error.message);
     }   
@@ -143,10 +166,11 @@ class MapScreen extends Component{
 
   async onDelete(marker){
     try {
-      let response = await fetch("http://192.168.1.103:3000/remove/"+marker._id,{
+      let response = await fetch("http://10.0.2.120:3000/remove/"+marker._id,{
           method: 'DELETE',
         });
         let res = await response.json();
+        console.log(res)
         if (res.success) {
           console.log("Removido o marker: ")
 
@@ -174,7 +198,22 @@ class MapScreen extends Component{
       );
   }
 	
+getMarkerColor(marker){
+  if(marker.category === 'Segurança'){
+    return 'red';
+  } else if(marker.category === 'Trânsito'){
+    return 'gold';
+  } else if(marker.category === 'Infraestrutura'){
+    return 'green';
+  } else if(marker.category === 'Clima'){
+    return 'indigo';
+  } else {
+    return 'blue' 
+  }
+}
+
 	render() {
+
     if(this.state.isLoading){
       return(
         <View
@@ -193,7 +232,8 @@ class MapScreen extends Component{
         <MapView.Marker
           coordinate={marker.coordinate}
           _id={marker._id}
-          pinColor={marker.color} 
+          pinColor={this.getMarkerColor(marker)}
+          key={marker._id} 
         >          
             <MapView.Callout onPress={(param) => this.onPressRemove(marker)}>
               <Text>{marker.description}</Text>
@@ -225,6 +265,23 @@ class MapScreen extends Component{
         >Adicionar Marcador</Text>
         </TouchableHighlight>
 
+        <TouchableHighlight
+          style={[
+            styles.myMarkers,
+            {
+              backgroundColor: this.state.modalMyMarkersVisible?"black":"white",
+            }
+          ]}
+          onPress={()=>this.openModalMyMarkers()}
+        >
+        
+        <Text
+        style={{color: this.state.modalMyMarkersVisible?"white":"black",
+        }}
+        >Meus Marcadores</Text>
+        </TouchableHighlight>
+
+
        	<MapView
            		style={styles.map}
           		region={this.state.region}
@@ -241,7 +298,17 @@ class MapScreen extends Component{
           onCancel={()=> this.setState({modalVisible:false})}
           onRequestClose={()=> {console.log('Modal Fechada')}}
           onAdd={this.insertMarker} 
-        />       
+        />  
+
+        <MyMarkersModal 
+          visible={this.state.modalMyMarkersVisible}
+          onRequestClose={()=> {console.log('Modal Fechada')}}
+          onBack={()=> this.setState({modalMyMarkersVisible:false})}
+          markersArray={this.state.markers}
+          idUser={this.props.navigation.state.params.user}
+          onDelete={this.onDelete}
+        /> 
+
      	</View>
     );
   }
@@ -267,7 +334,21 @@ const styles = StyleSheet.create({
     borderColor: 'black',
     borderWidth: 3,
     borderRadius: 14,
-    paddingHorizontal: 10
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+
+  },
+  myMarkers: {
+    position: 'absolute', 
+    bottom: 10,
+    left: 10, 
+    zIndex: 2,
+    backgroundColor: 'white',
+    borderColor: 'black',
+    borderWidth: 3,
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
   },
 });
 
